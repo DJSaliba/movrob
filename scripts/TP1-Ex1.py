@@ -10,17 +10,8 @@ class TangentNode(ControlNode):
         self.lidar = LidarScanner('/base_scan')
     
     def iteration(self):
-        if self.robot.state == TB_state.FOLLOW_GOAL:
-            pass
-        elif self.robot.state == TB_state.FOLLOW_Oi:
-            pass
-        elif self.robot.state == TB_state.FOLLOW_TANG:
-            pass
-        elif self.robot.state == TB_state.REACHED_GOAL:
-            pass
-
-    def target(self):
         pass
+
 
 
 if __name__ == "__main__":
