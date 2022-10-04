@@ -16,9 +16,25 @@ class TangentBug():
         self.U = (0,0)
         rospy.Subscriber("/goal",Pose,self.callback_goal)
         self.ksi
+        self.state_dict = {
+            TB_state.REACHED_GOAL: self.stop,
+            TB_state.FOLLOW_GOAL: self.follow_goal,
+            TB_state.FOLLOW_Oi: self.follow_Oi,
+            TB_state.FOLLOW_TANG: self.follow_tangent
+        }
+        
+    def stop(self,_):
+        self.U = (0,0)
 
     def follow_goal(self, position):
         return atractive_field(position,self.goal,self.ksi,self.d_sat)
     
-    def follow_Oi(self, position,):
+    def follow_Oi(self, position):
+        pass
+
+    def follow_tangent(self,position):
+        f = self.state_dict[self.state]
+        pass
+
+    def plan(self,position):
         pass

@@ -33,7 +33,7 @@ class WaveFront():
         if obj_hit:
             candidates = [c for c in candidates if self.wave_map[c] != -1]
         if self.neighborhood == 4:
-            candidates = [c for c in candidates if abs(sum(c) - (x+y))==1]
+            candidates = [c for c in candidates if abs(c[0]-x)+abs(c[1]-y)==1]
         return [c for c in candidates if c != (x,y)]       
 
     #TODO: find a better way to index, instead of tuple(zip(*List<Tuple>))
