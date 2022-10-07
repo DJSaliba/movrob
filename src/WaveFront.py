@@ -1,3 +1,4 @@
+import rospy
 from PIL import Image
 import numpy as np
 from itertools import product
@@ -5,8 +6,12 @@ from itertools import product
 
 
 class WaveFront():
-    def __init__(self,image_path,neighborhood=8):
+    def __init__(self, image_path, scale = 10 ,neighborhood=4):
         self.image = Image.open(image_path).convert('1')
+        self.scale = scale
+        
+        self.shape = np.array(self.image.size)
+        self.image = self.image.resize(self.shape*scale)
         self.shape = self.image.size
 
         if neighborhood not in [4,8]:
@@ -43,7 +48,7 @@ class WaveFront():
             self._expand_obstacles()
             if self.wave_map[goal] != 0:
                 raise RuntimeError
-        self.goal = tuple(goal)
+        self.goal = tuple(int(g*self.scale+self.scale//2) for g in goal)
 
         # First iteration
         self.next_neighbors = self._get_neighbors(*goal,obj_hit=True)
@@ -55,14 +60,24 @@ class WaveFront():
         return self
 
     def get_next(self,x,y):
+        x = int(x*self.scale)
+        y = int(y*self.scale)
         current = self.wave_map[x,y]
         if current == 0 and (x,y) != self.goal or current == -1:
-            raise RuntimeError
+            msg = 'No path to goal.'
+            rospy.loginfo(msg)
+            return None
+        if current == -1:
+            msg = 'Inside a obstacle, please reset position'
+            rospy.loginfo(msg)
+            return None
+        if current == 0 and (x,y) == self.goal
+        
         candidates = self._get_neighbors(x,y,obj_hit=True)
         values = np.array([self.wave_map[c] for c in candidates])
         next_point = np.where(values == np.min(values))[0][0]
-        next_direction = [x,y] - np.array(candidates[next_point])
-        return next_direction
+        next_direction = np.array(candidates[next_point]) - [x,y]
+        return tuple(next_direction)
 
     def _wavefront(self):
         next = self.next_neighbors.pop(0)

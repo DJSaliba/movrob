@@ -29,8 +29,8 @@ class LidarScanner():
     def discontinuities(self):
         for i, (a,r) in enumerate(self.ranges):
             disc = []
-            if ((self.ranges[i-1][1] == self.range_max and a != self.range_max) or
-                (a == self.range_max and self.ranges[i-1][1] != self.range_max)):
+            if ((self.ranges[i-1][1] == self.range_max and r != self.range_max) or
+                (r == self.range_max and self.ranges[i-1][1] != self.range_max)):
                 disc.append(a)
         return disc
     

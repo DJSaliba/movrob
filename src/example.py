@@ -45,7 +45,7 @@ def callback_pose (data):
     z_q = data.pose.pose.orientation.z
     w_q = data.pose.pose.orientation.w
     euler = euler_from_quaternion ([x_q , y_q , z_q , w_q ])
-    theta_n = euler [2] # orientacao theta do robo no mundo
+    theta_n = euler[2] # orientacao theta do robo no mundo
     return
 
 # Rotina para a geracao da trajetoria de referencia
