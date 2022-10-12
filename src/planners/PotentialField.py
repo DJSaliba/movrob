@@ -11,3 +11,6 @@ class PotentialField():
         self.d_sat = d_sat
         self.eta = eta
         self.d_act = d_act
+
+    def plan():
+        pass

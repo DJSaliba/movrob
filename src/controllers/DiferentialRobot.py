@@ -1,10 +1,9 @@
 import rospy
 from geometry_msgs.msg import Twist
-from math import sqrt, sin, cos
-import numpy as np
+from math import sin, cos
 
 class DifferentialRobot():
-    def __init__(self,setup_topic,vel_topic,pose_topic,d):
+    def __init__(self,d):
         self.d = d
 
     #Rotina feedback linearization

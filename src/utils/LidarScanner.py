@@ -37,5 +37,5 @@ class LidarScanner():
     def get_closest(self):
         return min(self.ranges,key = lambda x: x[1])
     
-    def get_segment_from_angle(angle):
-        pass
+#    def get_segment_from_angle(angle):
+#        pass

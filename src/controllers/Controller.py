@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 import rospy
 
-from geometry_msgs.msg import Point, Twist
+from geometry_msgs.msg import Point, Twist, Pose
 from rosgraph_msgs.msg import Clock
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 
 #from src.LidarScanner import LidarScanner
-from src.DiferentialRobot import DifferentialRobot
+from .DiferentialRobot import DifferentialRobot
 
 class ControlNode(ABC):
 
     def __init__(self,params,freq:float=10.0):
         # Init params
-        self.set_simulation_params(params)
+        self.set_sim_params(params)
         rospy.init_node('control_node')
         #self.scanner = LidarScanner('/base_scan')
         self.pub_vel = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
@@ -30,38 +30,47 @@ class ControlNode(ABC):
         rospy.Subscriber('/setup_goal',Point,self.callback_goal)
 
         #Set current position
-        self.controller = DifferentialRobot
+        self.controller = DifferentialRobot(0.2)
         self.x = None
         self.y = None
         self.theta = 0
-        rospy.Subscriber("/base_pose_ground_truth",Odometry, self.callback_pose) # 
-        rospy.Subscriber("/setup_start",Odometry,self.callback_pose) # 
-
+        rospy.Subscriber("/base_pose_ground_truth",Odometry, self.callback_pose_odometry) #
+        rospy.Subscriber("/setup_origin",Pose,self.callback_pose)
         self.rate.sleep()
 
-    def set_sim_params(params):
+    def set_sim_params(self,params):
         for k, v in params.items():
             rospy.set_param(k,v)
 
     def get_sim_param(k):
         return rospy.get_param(k)
     
-    def callback_goal (self,data):
-        self.goal = (data.pose.position.x,data.pose.position.y)
-        self.goal_update()
+
+    def callback_goal(self,data):
+        old_goal = self.goal
+        self.goal = (data.x,data.y)
+        if old_goal != self.goal:
+            rospy.loginfo(f"Goal set to {self.goal}")
+            self.rate.sleep()
+            self.goal_update()
     
     # WaveFront and other methods that need extra computation
     def goal_update():
         return
 
+    def callback_pose_odometry(self,data):
+        #if self.x is not None and self.y is not None:
+        self.callback_pose(data.pose.pose)
+
     def callback_pose (self,data):
-        self.x = data.pose.pose.position.x
-        self.y = data.pose.pose.position.y
-        quat = data.pose.pose.orientation
+        self.x = data.position.x
+        self.y = data.position.y
+        quat = data.orientation
+        quat = [quat.x,quat.y,quat.z,quat.w]
         _,_,self.theta = euler_from_quaternion(quat)
 
     def publish_vel(self):
-        self.pub_vel(self.vel)
+        self.pub_vel.publish(self.vel)
 
     def callback_time(self, data):
         self.time = data.clock.secs*1e3 + data.clock.nsecs/1e6
@@ -74,7 +83,9 @@ class ControlNode(ABC):
             self.rate.sleep()
 
     def setup(self):
-        while self.goal is None or self.controller.x is None:
+
+        while self.goal is None or self.x is None or self.y is None:
+            rospy.loginfo_once("Waiting for goal to be set")
             self.rate.sleep()
 
     @abstractmethod

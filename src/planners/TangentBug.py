@@ -27,7 +27,7 @@ class TangentBug:
         self.eta = eta
         self.d_act = d_act
 
-        self.state_dict = {
+        self.state_func_dict = {
             TB_state.REACHED_GOAL: self.stop,
             TB_state.FOLLOW_GOAL: self.follow_goal,
             TB_state.FOLLOW_Oi: self.follow_Oi,
@@ -55,7 +55,6 @@ class TangentBug:
         U = potential_field(
             position, q_oi, self.ksi, self.d_sat, q_closest, self.eta, self.d_act
         )
-
         return U
 
     def follow_tangent(self, position, goal):

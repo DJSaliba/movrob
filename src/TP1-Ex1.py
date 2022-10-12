@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 import rospy
-from src.Controller import ControlNode
-from src.TangentBug import TangentBug, TB_state
-from src.LidarScanner import LidarScanner
+from src.controllers.Controller import ControlNode
+from src.planners.TangentBug import TangentBug, TB_state
+from src.utils.LidarScanner import LidarScanner
 
 class TangentNode(ControlNode):
     def __init__(self,params):
