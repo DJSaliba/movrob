@@ -8,12 +8,12 @@ from tf.transformations import euler_from_quaternion
 
 #from src.LidarScanner import LidarScanner
 from .DiferentialRobot import DifferentialRobot
+from utils.utils import vec_angle
 
 class ControlNode(ABC):
 
-    def __init__(self,params,freq:float=10.0):
+    def __init__(self,freq=10.0):
         # Init params
-        self.set_sim_params(params)
         rospy.init_node('control_node')
         #self.scanner = LidarScanner('/base_scan')
         self.pub_vel = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
@@ -38,14 +38,6 @@ class ControlNode(ABC):
         rospy.Subscriber("/setup_origin",Pose,self.callback_pose)
         self.rate.sleep()
 
-    def set_sim_params(self,params):
-        for k, v in params.items():
-            rospy.set_param(k,v)
-
-    def get_sim_param(k):
-        return rospy.get_param(k)
-    
-
     def callback_goal(self,data):
         old_goal = self.goal
         self.goal = (data.x,data.y)
@@ -53,9 +45,9 @@ class ControlNode(ABC):
             rospy.loginfo(f"Goal set to {self.goal}")
             self.rate.sleep()
             self.goal_update()
-    
+
     # WaveFront and other methods that need extra computation
-    def goal_update():
+    def goal_update(self):
         return
 
     def callback_pose_odometry(self,data):
@@ -83,13 +75,11 @@ class ControlNode(ABC):
             self.rate.sleep()
 
     def setup(self):
-
         while self.goal is None or self.x is None or self.y is None:
             rospy.loginfo_once("Waiting for goal to be set")
             self.rate.sleep()
 
-    @abstractmethod
-    def start():
+    def start(self):
         return
     
     @abstractmethod

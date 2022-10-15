@@ -1,6 +1,6 @@
 import rospy
 
-from src.LidarScanner import LidarScanner
+from utils.LidarScanner import LidarScanner
 
 class PotentialField():
     def __init__(self, ksi, d_sat, eta, d_act):

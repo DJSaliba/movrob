@@ -17,25 +17,44 @@ class LidarScanner():
 
     def callback_scan(self,data):
         # Scanned area
-        self.angle_min = data.angle_min
-        self.angle_max = data.angle_max
+        self.ang_min = data.angle_min
+        self.ang_max = data.angle_max
         self.increment = data.angle_increment
         # Scan results
-        self.range_min = data.range_min
-        self.range_max = data.range_max
+        self.rmin = data.range_min
+        self.rmax = data.range_max
         self.ranges = [(a,r) for a,r in zip(np.arange(self.ang_min, self.ang_max,
                                                       self.increment), data.ranges)]
-    
+
+    def continuities(self):
+        cont_start = []
+        cont_end = []
+        ranges = self.ranges.copy()
+        for i, (a,r) in enumerate(ranges):
+            prev = ranges[i-1][1]
+            next = ranges[(i+1)%len(ranges)][1]
+            if r != self.rmax:
+                if prev == self.rmax or abs(r-prev) > self.rmax/2:
+                    cont_start.append(a)
+                if next == self.rmax or abs(next-r) > self.rmax/2:
+                    cont_end.append(a)
+        if cont_start[-1]> cont_end[-1]:
+            cont_end.append(cont_end.pop(0))
+        return list(zip(cont_start,cont_end))
+
     def discontinuities(self):
-        for i, (a,r) in enumerate(self.ranges):
-            disc = []
-            if ((self.ranges[i-1][1] == self.range_max and r != self.range_max) or
-                (r == self.range_max and self.ranges[i-1][1] != self.range_max)):
-                disc.append(a)
-        return disc
-    
+        cont_start,cont_end = zip(*self.continuities())
+        disc = cont_start + cont_end
+        return np.sort(disc)
+
+    def get_dist(self,angle):
+        angles, _ = zip(*self.ranges)
+        angle_diff = np.absolute(np.array(angles)-angle)
+        idx = np.argmin(angle_diff)
+        return self.ranges[idx][1]
+
     def get_closest(self):
-        return min(self.ranges,key = lambda x: x[1])
+        return np.argmin(list(zip(*self.ranges))[1])
     
 #    def get_segment_from_angle(angle):
 #        pass

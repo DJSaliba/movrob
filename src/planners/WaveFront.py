@@ -3,8 +3,6 @@ from PIL import Image
 import numpy as np
 from itertools import product
 
-
-
 class WaveFront():
     def __init__(self, image_path, map_scale = 5,resolution = 1,neighborhood=4):
         self.map_scale = map_scale
