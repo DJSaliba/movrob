@@ -8,7 +8,6 @@ from tf.transformations import euler_from_quaternion
 
 #from src.LidarScanner import LidarScanner
 from .DiferentialRobot import DifferentialRobot
-from utils.utils import vec_angle
 
 class ControlNode(ABC):
 
