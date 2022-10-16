@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 import rospy
 from controllers.Controller import ControlNode
-from planners.TangentBug import TangentBug
+from planners.TangentBug import TB_state, TangentBug
 from utils.LidarScanner import LidarScanner
 
 class TangentNode(ControlNode):
     def __init__(self):
-        super().__init__()
         self.planner = TangentBug()
         self.lidar = LidarScanner('/base_scan')
+        super().__init__()
     
+    def goal_update(self):
+        self.planner.state = TB_state.FOLLOW_GOAL
+
     def start(self):
         while not self.lidar.ranges:
             self.rate.sleep()

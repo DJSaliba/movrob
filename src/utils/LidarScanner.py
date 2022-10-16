@@ -55,6 +55,10 @@ class LidarScanner():
 
     def get_closest(self):
         return np.argmin(list(zip(*self.ranges))[1])
-    
+
+    def get_front(self,angle):
+        a = [a for a,_ in self.ranges if np.abs(a)<=angle]
+        r = [r for a,r in self.ranges if np.abs(a)<=angle]
+        return np.array(a),np.array(r)
 #    def get_segment_from_angle(angle):
 #        pass

@@ -80,14 +80,14 @@ window
 floorplan
 ( 
   name "my_map"
-  bitmap "test_env1.png"
+  bitmap "test_tangent.png"
   size [60.000 60.000 1.000]
   pose [ 0.000 0.000 0.000 0.000 ] #[x y ? theta]
 )
 
 # throw in a robot
 erratic(
-  pose [-20.000 20.000 0.000 90.000 ]
+  pose [15.000 -5.000 0.000 90.000 ]
   name "robot_0"
   color_rgba [0.000 0.000 1.000 0.200]
 )
