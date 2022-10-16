@@ -94,7 +94,7 @@ class TangentBug():
         ranges = self.scanner.ranges
         points = [get_measured_points(*position,a+angle,r) for a,r in ranges]
         dist = np.array([segment_dist(points[i-1],p,self.q_followed) for i,p in enumerate(points)])
-        close_by = (dist <= 0.1).any()
+        close_by = (dist <= 0.2).any()
         if self.close_by and not close_by and self.time_start+2e3 < self.time:
             self.close_by = close_by
         elif not self.close_by and close_by:
