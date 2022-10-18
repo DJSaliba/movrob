@@ -7,10 +7,9 @@ from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 
 #from src.LidarScanner import LidarScanner
-from .DiferentialRobot import DifferentialRobot
+from controllers.DiferentialRobot import DifferentialRobot
 
 class ControlNode(ABC):
-
     def __init__(self,freq=10.0):
         # Init params
         rospy.init_node('control_node')
@@ -37,6 +36,10 @@ class ControlNode(ABC):
         rospy.Subscriber("/setup_origin",Pose,self.callback_pose)
         self.rate.sleep()
 
+    ###############
+    # ROS updates #
+    ###############
+
     def callback_goal(self,data):
         old_goal = self.goal
         new_goal = (data.x,data.y)
@@ -46,12 +49,11 @@ class ControlNode(ABC):
             self.goal_update()
             self.rate.sleep()
 
-    # WaveFront and other methods that need extra computation
     def goal_update(self):
+        # WaveFront and other methods that need extra computation
         return
 
     def callback_pose_odometry(self,data):
-        #if self.x is not None and self.y is not None:
         self.callback_pose(data.pose.pose)
 
     def callback_pose (self,data):
@@ -66,22 +68,28 @@ class ControlNode(ABC):
 
     def callback_time(self, data):
         self.time = data.clock.secs*1e3 + data.clock.nsecs/1e6
-
-    def run(self):
-        self.setup()
-        self.start()
-        while not rospy.is_shutdown():
-            self.iteration()
-            self.rate.sleep()
-
+    
+    ####################
+    # Robot controller #
+    ####################
+    
     def setup(self):
-        while self.goal is None or self.x is None or self.y is None:
-            rospy.loginfo_once("Waiting for goal to be set")
-            self.rate.sleep()
-
-    def start(self):
         return
     
     @abstractmethod
-    def iteration():
+    def plan():
         return
+
+    def run(self):
+        while self.goal is None or self.x is None or self.y is None:
+            rospy.loginfo_once("Waiting for goal to be set")
+            self.rate.sleep()
+        
+        self.setup()
+        
+        while not rospy.is_shutdown():
+            self.plan()
+            if self.U is not None:
+                self.vel = self.controller.feedback_linearization(self.U,self.theta)
+                self.publish_vel()
+            self.rate.sleep()

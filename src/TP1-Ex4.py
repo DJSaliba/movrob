@@ -14,14 +14,8 @@ class WaveNode(ControlNode):
     def start(self):
         self.goal_update()
 
-    def iteration(self):
+    def plan(self):
         self.U = self.planner.get_next(self.x,self.y)
-        if self.U is None or self.U == (0,0):
-            self.rate.sleep()
-            return
-        self.vel = self.controller.feedback_linearization(self.U,self.theta)
-        self.publish_vel()
-
 
 if __name__ == "__main__":
     try:

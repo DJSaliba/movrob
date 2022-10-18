@@ -3,12 +3,13 @@ from enum import Enum
 import rospy
 from rosgraph_msgs.msg import Clock
 
+from planners.PotentialField import PotentialField
 from utils.potential_field import potential_field
 from utils.LidarScanner import LidarScanner
 from utils.utils import *
 import numpy as np
 
-class TangentBug():
+class TangentBug(PotentialField):
     class TB_state(Enum):
         STOP = 0
         FOLLOW_GOAL = 1
@@ -16,21 +17,15 @@ class TangentBug():
         FOLLOW_TANG = 3
 
     def __init__(self, ksi=1, d_sat=1.5, eta=1/2, d_act=2):
+        super().__init__(ksi, d_sat, eta, d_act)
         self.state = self.TB_state.FOLLOW_GOAL
-        self.U = (0, 0)
         rospy.init_node('control_node')
         rospy.Subscriber('/clock', Clock, self.callback_time)
-        self.scanner = LidarScanner("/base_scan")
 
         self.oi_dist = None
         self.d_followed = np.inf
         self.close_by = False
         self.time_start = None
-
-        self.ksi = ksi
-        self.d_sat = d_sat
-        self.eta = eta
-        self.d_act = d_act
 
         self.state_func_dict = {
             self.TB_state.FOLLOW_GOAL: self.follow_goal,
@@ -55,15 +50,9 @@ class TangentBug():
 
     def min_reach(self,goal,position,angle):
         ranges = self.scanner.ranges
-        points = [(a,r,get_measured_points(*position,a+angle,r)) for a,r in ranges]
+        points = [(a,r,get_measured_points(*position,a+angle,r)) for a,r in ranges if r != self.scanner.rmax]
         dist = [(a,r,vec_norm(p,goal)[1]) for a,r,p in points]
         return min(dist, key = lambda x: x[2])
-
-    def get_q_wall(self,position,theta):
-        x,y = position
-        idx = self.scanner.get_closest()
-        a,r = self.scanner.ranges[idx]
-        return get_measured_points(x,y,a+theta,r)
 
     def oi_heuristic(self, position, goal,theta):
         x, y = position
@@ -80,9 +69,9 @@ class TangentBug():
         points = [get_measured_points(*position,a+angle,r) for a,r in ranges]
         dist = np.array([segment_dist(points[i-1],p,self.q_followed) for i,p in enumerate(points)])
         close_by = (dist <= 0.2).any()
-        if (not self.close_by and close_by) or self.time_start+5e6 < self.time:
+        if (not self.close_by and close_by) or self.time_start+1e7 < self.time:
             return False
-        if (self.close_by and not close_by) and self.time_start+5e3 < self.time:
+        if (self.close_by and not close_by) and self.time_start+1e4 < self.time:
             self.close_by = close_by
         return True
 
@@ -110,7 +99,7 @@ class TangentBug():
         T = self.ccw * ortogonal_vec(D) / dnorm
         G = - enorm / np.sqrt(1 + enorm**2)
         H = 1/np.sqrt(1+enorm**2)
-        U = self.ksi*self.eta*self.d_sat*(G*E+H*T)
+        U = self.ksi*self.d_sat*(G*E+H*T)
         return U
 
     # Compute next U
@@ -153,10 +142,10 @@ class TangentBug():
                 self.q_oi = q_oi
             else:
                 self.state = self.TB_state.FOLLOW_TANG
-                d_followed = self.min_reach(goal,position,angle)[2]
+                theta,r_reach,d_followed = self.min_reach(goal,position,angle)
                 if d_followed < self.d_followed:
                     self.d_followed = d_followed
-                    self.q_followed = self.get_q_wall(position,angle)
+                    self.q_followed = get_measured_points(*position,theta+angle,r_reach)
                 self.time_start = self.time
                 self.close_by = True
                 self.ccw = ccw(position,q_oi,goal)
