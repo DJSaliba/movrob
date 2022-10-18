@@ -39,11 +39,12 @@ class ControlNode(ABC):
 
     def callback_goal(self,data):
         old_goal = self.goal
-        self.goal = (data.x,data.y)
-        if old_goal != self.goal:
-            rospy.loginfo(f"Goal set to {self.goal}")
-            self.rate.sleep()
+        new_goal = (data.x,data.y)
+        if old_goal != new_goal:
+            rospy.loginfo(f"Goal set to {new_goal}")
+            self.goal = new_goal
             self.goal_update()
+            self.rate.sleep()
 
     # WaveFront and other methods that need extra computation
     def goal_update(self):
