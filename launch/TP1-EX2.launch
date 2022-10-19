@@ -1,0 +1,11 @@
+<?xml version = "1.0"?>
+
+<launch>
+
+<!--Run thestagesimulator-->
+<node pkg = "stage_ros" name = "stageros" type = "stageros" output = "screen" args = "-d $(find movrob)/worlds/TP1-Ex2.world"></node>
+
+<!--Run the controller node       args = "x_goal y_goal"-->
+<node pkg = "movrob" name = "scripts" type = "TP1-Ex2.py" output = "screen" ></node>
+
+</launch>
