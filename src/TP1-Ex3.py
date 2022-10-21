@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 from controllers.Controller import ControlNode
-from src.planners.PotentialField import PotentialField
+from planners.PotentialField import PotentialField
 
 class PotentialNode(ControlNode):
     def __init__(self):
@@ -9,7 +9,7 @@ class PotentialNode(ControlNode):
         super().__init__()
 
     def setup(self):
-        while not self.lidar.ranges:
+        while not self.planner.scanner.ranges:
             self.rate.sleep()
 
     def plan(self):

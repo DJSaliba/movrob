@@ -6,10 +6,15 @@ from rosgraph_msgs.msg import Clock
 from planners.Planner import Planner
 
 class PathFollower(Planner):
-    def __init__(self,path,dt):
+    def __init__(self,path,dt=0.000001):
         self.path = path
         self.dt = dt
         rospy.Subscriber('/clock', Clock, self.callback_time)
+
+    def startup(self):
+        while self.x is None or self.y is None:
+            rospy.loginfo_once("Waiting for goal to be set")
+            self.rate.sleep()
 
     def callback_time(self,data):
         self.time = data.clock.secs*1e3 + data.clock.nsecs/1e6

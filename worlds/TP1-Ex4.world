@@ -5,18 +5,19 @@ define robot_block model
   gui_nose 0
 )
 
-define topurg ranger
-(
-	sensor( 			
-    range [ 0.2  6.0 ]
-    fov 360
-   samples 360
-  )
+#define topurg ranger
+#(
+#	sensor( 			
+#    range [ 0.2  6.0 ]
+#    fov 360
+#   samples 360
+#  )
 
-  # generic model properties
-  color "black"
-  size [ 0.600 0.600 0.600 ]
-)
+#  # generic model properties
+#  color "black"
+#  size [ 0.600 0.600 0.600 ]
+#)
+
 
 define erratic position
 (
@@ -24,7 +25,7 @@ define erratic position
   origin [0.000 0.000 0.000 0.000]
   gui_nose 1
   drive "diff"
-  topurg(pose [ 0.000 0.000 0.000 0.000 ])
+  #topurg(pose [ 0.000 0.000 0.000 0.000 ])
   robot_block(pose [0.000 0.000 0.000 0.000 ])
 )
 
@@ -42,7 +43,7 @@ define floorplan model
   gui_outline 0
   gripper_return 0
   fiducial_return 0
-  ranger_return 1
+  #ranger_return 1
 )
 
 # set the resolution of the underlying raytrace model in meters
@@ -80,7 +81,7 @@ window
 floorplan
 ( 
   name "my_map"
-  bitmap "test_wavefrong.png"
+  bitmap "test_wavefront.png"
   size [60.000 60.000 1.000]
   pose [ 0.000 0.000 0.000 0.000 ] #[x y ? theta]
 )

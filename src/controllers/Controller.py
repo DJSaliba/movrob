@@ -73,6 +73,11 @@ class ControlNode(ABC):
     # Robot controller #
     ####################
     
+    def startup(self):
+        while self.goal is None or self.x is None or self.y is None:
+            rospy.loginfo_once("Waiting for goal to be set")
+            self.rate.sleep()
+
     def setup(self):
         return
     
@@ -81,9 +86,7 @@ class ControlNode(ABC):
         return
 
     def run(self):
-        while self.goal is None or self.x is None or self.y is None:
-            rospy.loginfo_once("Waiting for goal to be set")
-            self.rate.sleep()
+        self.startup()
         
         self.setup()
         

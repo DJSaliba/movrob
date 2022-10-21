@@ -19,7 +19,7 @@ class WaveNode(ControlNode):
 
 if __name__ == "__main__":
     try:
-        image_path = "/workspaces/src/movrob/worlds/test_env.png"
+        image_path = "/workspaces/src/movrob/worlds/test_wavefront.png"
         node = WaveNode(image_path)
         node.run()
     except rospy.ROSInterruptException:

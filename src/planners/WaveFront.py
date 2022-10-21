@@ -5,7 +5,7 @@ from itertools import product
 from planners.Planner import Planner
 
 class WaveFront(Planner):
-    def __init__(self, image_path, map_scale = 5,resolution = 1,neighborhood=4):
+    def __init__(self, image_path, map_scale = 5,resolution = 1,neighborhood=8):
         self.map_scale = map_scale
         self.resolution = resolution
 

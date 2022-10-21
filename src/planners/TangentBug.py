@@ -32,6 +32,7 @@ class TangentBug(PotentialField):
             self.TB_state.FOLLOW_Oi: self.follow_Oi,
             self.TB_state.FOLLOW_TANG: self.follow_tangent,
         }
+        print("here")
 
     def callback_time(self,data):
         self.time = data.clock.secs*1e3 + data.clock.nsecs/1e6
@@ -93,13 +94,13 @@ class TangentBug(PotentialField):
 
     def follow_tangent(self, _, position,__):
         D, dnorm = vec_norm(position,self.q_wall)
-        E, enorm = vec_norm(D,0.75*D/dnorm)
-        if enorm == 0:
-            enorm = 1e-3
+        N, norm = vec_norm(D,0.75*D/dnorm)
+        if norm == 0:
+            norm = 1e-3
         T = self.ccw * ortogonal_vec(D) / dnorm
-        G = - enorm / np.sqrt(1 + enorm**2)
-        H = 1/np.sqrt(1+enorm**2)
-        U = self.ksi*self.d_sat*(G*E+H*T)
+        G = - norm / np.sqrt(1 + norm**2)
+        H = 1/np.sqrt(1+norm**2)
+        U = self.ksi*self.d_sat*(G*N+H*T)
         return U
 
     # Compute next U
