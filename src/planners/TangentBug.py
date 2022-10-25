@@ -32,7 +32,6 @@ class TangentBug(PotentialField):
             self.TB_state.FOLLOW_Oi: self.follow_Oi,
             self.TB_state.FOLLOW_TANG: self.follow_tangent,
         }
-        print("here")
 
     def callback_time(self,data):
         self.time = data.clock.secs*1e3 + data.clock.nsecs/1e6
@@ -106,7 +105,7 @@ class TangentBug(PotentialField):
     # Compute next U
 
     def get_next(self, goal, position, angle):
-        if vec_norm(goal,position)[1] <= 0.2:
+        if vec_norm(goal,position)[1] <= 0.2: # Early goal check
             rospy.loginfo("Goal reached")
             self.state = self.TB_state.STOP
 
@@ -114,37 +113,37 @@ class TangentBug(PotentialField):
             return None
 
         if self.state == self.TB_state.FOLLOW_TANG:
-            if not self.check_no_path(position,angle):
+            if not self.check_no_path(position,angle): # No path available
                 rospy.loginfo("No path to goal")
                 self.state = self.TB_state.STOP
                 return None
 
             self.q_wall = self.get_q_wall(position,angle)
             theta,r_reach,d_reach = self.min_reach(goal,position,angle)
-            if d_reach < self.d_followed:
+            if d_reach < self.d_followed: # Update d_followed with better points
                 self.d_followed = d_reach
                 self.q_followed = get_measured_points(*position,theta+angle,r_reach)
                 self.time_start = self.time
                 self.close_by = True
-                if not self.obj_in_path(goal,position,angle):
+                if not self.obj_in_path(goal,position,angle): # Path is free, back to follow_goal
                     self.state = self.TB_state.FOLLOW_GOAL
-        elif not self.obj_in_path(goal,position,angle):
+        elif not self.obj_in_path(goal,position,angle): # No object in path
             self.state = self.TB_state.FOLLOW_GOAL
             self.oi_dist = None
-        elif self.state == self.TB_state.FOLLOW_GOAL:
+        elif self.state == self.TB_state.FOLLOW_GOAL: # Object in path
             self.state = self.TB_state.FOLLOW_Oi
 
-        if self.state == self.TB_state.FOLLOW_Oi:
+        if self.state == self.TB_state.FOLLOW_Oi: # Find best oi, follow it
             q_oi = self.oi_heuristic(position, goal,angle)
             self.q_wall = self.get_q_wall(position,angle)
             oi_dist = vec_norm(q_oi,goal)[1]
             if self.oi_dist is None or oi_dist <= self.oi_dist + 0.2:
                 self.oi_dist = oi_dist
                 self.q_oi = q_oi
-            else:
+            else: # Oi heuristic got worse
                 self.state = self.TB_state.FOLLOW_TANG
                 theta,r_reach,d_followed = self.min_reach(goal,position,angle)
-                if d_followed < self.d_followed:
+                if d_followed < self.d_followed: # Update d_followed with better points
                     self.d_followed = d_followed
                     self.q_followed = get_measured_points(*position,theta+angle,r_reach)
                 self.time_start = self.time

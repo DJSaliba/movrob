@@ -32,6 +32,7 @@ def relative_angle(p1,p2,theta):
         angle += np.pi
     return angle
 
+# Check if counterclockwise
 def ccw(A,B,C):
     cc = (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
     return 1 if cc else -1

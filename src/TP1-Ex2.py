@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 from controllers.Controller import ControlNode
-from planners.PathFollower import PathFollower
+from planners.TrajectoryFollower import TrajectoryFollower
 import numpy as np
 
 def cx(tk):
@@ -23,7 +23,7 @@ def cy(tk):
 
 class PathNode(ControlNode):
     def __init__(self,path):
-        self.planner = PathFollower(path)
+        self.planner = TrajectoryFollower(path)
         super().__init__()
 
     def plan(self):
