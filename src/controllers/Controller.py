@@ -43,7 +43,7 @@ class ControlNode(ABC):
     def callback_goal(self,data):
         old_goal = self.goal
         new_goal = (data.x,data.y)
-        if old_goal != new_goal:
+        if old_goal != new_goal and (None not in [self.x,self.y]):
             rospy.loginfo(f"Goal set to {new_goal}")
             self.goal = new_goal
             self.goal_update()

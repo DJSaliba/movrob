@@ -1,3 +1,5 @@
+from functools import cache
+from itertools import product
 import numpy as np
 
 def vec_norm(p1,p2):
@@ -33,6 +35,7 @@ def relative_angle(p1,p2,theta):
     return angle
 
 # Check if counterclockwise
+@cache
 def ccw(A,B,C):
     cc = (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
     return 1 if cc else -1
@@ -41,6 +44,7 @@ def ortogonal_vec(v):
     return np.array([-v[1],v[0]])
 
 # from: https://gist.github.com/nim65s/5e9902cd67f094ce65b0
+@cache
 def segment_dist(A, B, P):
     """ segment line AB, point P, where each one is an array([x, y]) """
     A = np.array(A)
@@ -53,3 +57,23 @@ def segment_dist(A, B, P):
     if np.arccos(np.dot((P - B) / np.linalg.norm(P - B), (A - B) / np.linalg.norm(A - B))) > np.pi / 2:
         return np.linalg.norm(P - B)
     return np.linalg.norm(np.cross(A-B, A-P))/np.linalg.norm(B-A)
+
+def line_collision(A,B,map):
+    x1,x2 = np.sort((A[0],B[0]))
+    y1,y2 = np.sort((A[1],B[1]))
+
+    for i,j in product(range(x1,x2+1),range(y1,y2+1)):
+        if map[i,j]:
+            continue
+        borders = [(i,j),(i+1,j),(i,j+1),(i+1,j+1)]
+        for p in borders:
+            if segment_dist(A,B,p) < 0.2:
+                return True
+        clock = 0
+        for p in borders:
+            if clock == 0:
+                clock = ccw(A,B,p)
+            else:
+                if clock != ccw(A,B,p):
+                    return True
+    return False
