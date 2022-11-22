@@ -1,6 +1,8 @@
-from functools import cache
+from functools import lru_cache as cache
 from itertools import product
 import numpy as np
+from numba import njit, jit
+from numba.np.extensions import cross2d
 
 def vec_norm(p1,p2):
     p1 = np.array(p1)
@@ -35,7 +37,7 @@ def relative_angle(p1,p2,theta):
     return angle
 
 # Check if counterclockwise
-@cache
+@njit
 def ccw(A,B,C):
     cc = (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
     return 1 if cc else -1
@@ -44,36 +46,67 @@ def ortogonal_vec(v):
     return np.array([-v[1],v[0]])
 
 # from: https://gist.github.com/nim65s/5e9902cd67f094ce65b0
-@cache
 def segment_dist(A, B, P):
     """ segment line AB, point P, where each one is an array([x, y]) """
     A = np.array(A)
     B = np.array(B)
     P = np.array(P)
-    if all(A == P) or all(B == P):
+    if np.all(A == P) or np.all(B == P):
         return 0
     if np.arccos(np.dot((P - A) / np.linalg.norm(P - A), (B - A) / np.linalg.norm(B - A))) > np.pi / 2:
         return np.linalg.norm(P - A)
     if np.arccos(np.dot((P - B) / np.linalg.norm(P - B), (A - B) / np.linalg.norm(A - B))) > np.pi / 2:
         return np.linalg.norm(P - B)
-    return np.linalg.norm(np.cross(A-B, A-P))/np.linalg.norm(B-A)
+    return np.linalg.norm(np.cross(A-B, A-P))/np.linalg.norm(B - A)
 
-def line_collision(A,B,map):
-    x1,x2 = np.sort((A[0],B[0]))
-    y1,y2 = np.sort((A[1],B[1]))
+# @cache(maxsize=None)
+# @njit
+# def line_dist(A,B,P):
+#     def norm(x,y):
+#         return np.sqrt(x**2 + y**2)
+#     A = np.array(A)
+#     B = np.array(B)
+#     P = np.array(P)
+#     vec = cross2d(A-B, A-P)
+#     A = A.reshape((2,1))
+#     B = B.reshape((2,1))
+#     P = P.reshape((2,1))
+#     dif = B - A
+#     return norm(vec.take(0),vec.take(0))/norm(dif.take(0),dif.take(0))
 
-    for i,j in product(range(x1,x2+1),range(y1,y2+1)):
-        if map[i,j]:
-            continue
-        borders = [(i,j),(i+1,j),(i,j+1),(i+1,j+1)]
-        for p in borders:
-            if segment_dist(A,B,p) < 0.2:
-                return True
-        clock = 0
-        for p in borders:
-            if clock == 0:
-                clock = ccw(A,B,p)
-            else:
-                if clock != ccw(A,B,p):
-                    return True
+@njit
+def line_grid_collision(A,B,map,d=0.2):
+    x1,x2 = min(int(A[0]),int(B[0])),max(int(A[0]),int(B[0]))
+    y1,y2 = min(int(A[1]),int(B[1])),max(int(A[1]),int(B[1]))
+
+    for i in range(x1,x2+1):
+        for j in range(y1,y2+1):
+            if map[i,j]:
+                continue
+            # corners = [(i,j),(i+1,j),(i,j+1),(i+1,j+1)]
+            # for p in corners:
+            #     dist = line_dist(A,B,p)
+            #     if dist > np.sqrt(2)*1.1:
+            #         continue
+            #     if dist < np.sqrt(2)*0.1:
+            #         return True
+            corners = [(i-d,j-d),(i+d+1,j-d),(i-d,j+d+1),(i+d+1,j+d+1)]
+            clock = 0
+            for p in corners:
+                if clock == 0:
+                    clock = ccw(A,B,p)
+                else:
+                    if clock != ccw(A,B,p):
+                        return True
     return False
+
+@njit
+def find_closest(p,graph):
+    dist = np.inf
+    vert = None
+    for v in graph:
+        d = np.sqrt((p[0]-v[0])**2 + (p[1]-v[1])**2)
+        if d < dist:
+            dist = d 
+            vert = v
+    return vert

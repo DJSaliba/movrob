@@ -8,20 +8,16 @@ import rospy
 
 from utils.Node import Node, OpenList, VisitedList
 from utils.utils import vec_norm, manh_dist
-from planners.Planner import Planner
+from planners.Planner import Mapper
 
 
-class Astar(Planner):
+class Astar(Mapper):
     def __init__(self,image_path, scale = 1,neighborhood=4):
-        self.image = Image.open(image_path).convert('1')
-        self.map = np.transpose(np.array(self.image))
-        self.size = np.array(self.image.size)
+        super().__init__(image_path)
         self.scale = scale
         
         self.visited = VisitedList()
         self.openlist = OpenList()
-        self.expanded = 0
-        self.path = []
         self._initialized = False
 
         if neighborhood not in [4,8]:
@@ -37,56 +33,31 @@ class Astar(Planner):
         self._initialized = False
         
         rospy.loginfo("Calculating path")
-        self.search_path(position,goal)
+        self._initialized = self.search_path(position,goal)
         rospy.loginfo("Path calculated")
 
-        self._initialized = True
         return self
 
     def setup_search(self,position,goal):
         coord = self.pos2coord(position)
-        self.goal = self.pos2coord(goal)
         start = self.gen_node(coord)
         self.openlist.insert(start)
+
+        self.goal = self.pos2coord(goal)
 
     def search_path(self,position,goal):
         self.setup_search(position,goal)
         node = self.search_loop()
         if not node:
             rospy.loginfo("No path available")
-            return
+            return False
         self.path = []
         while node != None:
             self.path.insert(0,node.coord)
             node = node.parent
-
-    def get_next(self, position, goal):
-        if not self._initialized:
-            return None
-        coord = self.pos2coord(position,False)
-        if not self.path:
-            vec, norm = vec_norm(goal,position)
-            if norm < 0.2:
-                rospy.loginfo("Goal reached.")
-                return None
-        else:
-            mid_goal = self.path[0]
-            vec,norm =  vec_norm(coord,mid_goal)
-            if norm < 0.2:
-                self.path.pop(0)
-                return (0,0)
-        U = vec/norm
-        if self.path:
-            U[0] = -U[0]
-        return U
-    
-    def pos2coord(self,position,exact = True):
-        coord = ((self.size[0]-1)/2 + position[0]/self.scale,
-                 (self.size[1]-1)/2 - position[1]/self.scale)
-        if exact:
-            return tuple(int(c) for c in coord)
-        else:
-            return coord
+        print(self.path)
+        self.save_graph_img()
+        return True
 
     def _get_neighbors(self,coord,add=False):
         x,y = coord
@@ -118,9 +89,10 @@ class Astar(Planner):
         return vec_norm(coord, self.goal)[1]
 
     def add2open(self, parent:Node, children):
-        self.expanded +=1
         for coord in children:
-            if self.map[coord] == 0:
+            if ( isinstance(coord[0], int) and
+                 isinstance(coord[1], int) and
+                 self.map[coord] == 0 ):
                 self.visited.add(coord)
             node_cost = np.sqrt(manh_dist(parent.coord,coord))
             depth = parent.depth + 1

@@ -2,14 +2,14 @@ import rospy
 from PIL import Image
 import numpy as np
 from itertools import product
-from planners.Planner import Planner
+from planners.Planner import Mapper
 
-class WaveFront(Planner):
+class WaveFront(Mapper):
     def __init__(self, image_path, map_scale = 5,resolution = 1,neighborhood=8):
+        super().__init__(image_path)
         self.map_scale = map_scale
         self.resolution = resolution
 
-        self.image = Image.open(image_path).convert('1')
         self.image = self.image.resize(np.array(self.image.size)*self.map_scale)
         self.size = np.array(self.image.size)
 
@@ -18,7 +18,6 @@ class WaveFront(Planner):
             raise ValueError
         
         self.neighborhood = neighborhood
-        self._initialized = False
     
     def _expand_obstacles(self) -> None:
         new_map = self.wave_map.copy()

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Node:
-    coord: tuple[int,int]
+    coord: tuple[int,int] | tuple[float,float]
     real_cost: float
     heuristic: float
     depth: int

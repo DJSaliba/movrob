@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import rospy
 from controllers.Controller import ControlNode
-from planners.Astar import Astar
+from planners.PRM import PRM
 
-class AstarNode(ControlNode):
+class PRMNode(ControlNode):
     def __init__(self,image_path):
-        self.planner = Astar(image_path)
+        self.planner = PRM(image_path)
         super().__init__()
     
     def goal_update(self):
@@ -19,8 +19,8 @@ class AstarNode(ControlNode):
 
 if __name__ == "__main__":
     try:
-        image_path = "/workspaces/src/movrob/worlds/test_wavefront.png"
-        node = AstarNode(image_path)
+        image_path = "/workspaces/src/movrob/worlds/test_tangent.png"
+        node = PRMNode(image_path)
         node.run()
     except rospy.ROSInterruptException:
         pass
