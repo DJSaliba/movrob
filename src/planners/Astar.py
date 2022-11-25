@@ -12,13 +12,9 @@ from planners.Planner import Mapper
 
 
 class Astar(Mapper):
-    def __init__(self,image_path, scale = 1,neighborhood=4):
+    def __init__(self,image_path, scale = 1,neighborhood=8):
         super().__init__(image_path)
         self.scale = scale
-        
-        self.visited = VisitedList()
-        self.openlist = OpenList()
-        self._initialized = False
 
         if neighborhood not in [4,8]:
             raise ValueError
@@ -39,6 +35,8 @@ class Astar(Mapper):
         return self
 
     def setup_search(self,position,goal):
+        self.visited = VisitedList()
+        self.openlist = OpenList()
         coord = self.pos2coord(position)
         start = self.gen_node(coord)
         self.openlist.insert(start)
@@ -67,11 +65,15 @@ class Astar(Mapper):
         r = min(self.size[0],x+1)
         t = max(0, y-1)
         b = min(self.size[0],y+1)
-        candidates = set(product([l,x,r],[b,y,t]))
-        if self.neighborhood == 4:
-            candidates = [c for c in candidates if manh_dist(c,(x,y))==1]
-        candidates = [c for c in candidates if self.map[c]]
-        return list(set([c for c in candidates if c != (x,y)]))
+        candidates = [(x,t),(x,b),(l,y),(r,y)]
+        candidates = [c for c in set(candidates) if c != (x,y) and self.map[c]]
+        if self.neighborhood == 8:
+            ax1, ax2 = zip(*candidates)
+            ax1 = [i for i in ax1 if x!=i] 
+            ax2 = [j for j in ax2 if y!=j]
+            diag = product(ax1,ax2)
+            candidates.extend(c for c in diag if self.map[c])
+        return candidates
 
     def search_loop(self) -> Node|None:
         while self.openlist:

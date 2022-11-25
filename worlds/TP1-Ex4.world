@@ -54,7 +54,7 @@ interval_sim 50  # simulation timestep in milliseconds
 
 window
 ( 
-  size [ 600 600 ]
+  size [ 650 650 ]
 
   rotate [ 0.000 0.000 ]
   scale 10.000
@@ -92,4 +92,3 @@ erratic(
   name "robot_0"
   color_rgba [0.000 0.000 1.000 0.200]
 )
-#robot_block(pose [-40.000 -47.000 0.000 0.000 ])

@@ -59,20 +59,6 @@ def segment_dist(A, B, P):
         return np.linalg.norm(P - B)
     return np.linalg.norm(np.cross(A-B, A-P))/np.linalg.norm(B - A)
 
-# @cache(maxsize=None)
-# @njit
-# def line_dist(A,B,P):
-#     def norm(x,y):
-#         return np.sqrt(x**2 + y**2)
-#     A = np.array(A)
-#     B = np.array(B)
-#     P = np.array(P)
-#     vec = cross2d(A-B, A-P)
-#     A = A.reshape((2,1))
-#     B = B.reshape((2,1))
-#     P = P.reshape((2,1))
-#     dif = B - A
-#     return norm(vec.take(0),vec.take(0))/norm(dif.take(0),dif.take(0))
 
 @njit
 def line_grid_collision(A,B,map,d=0.2):
@@ -83,13 +69,6 @@ def line_grid_collision(A,B,map,d=0.2):
         for j in range(y1,y2+1):
             if map[i,j]:
                 continue
-            # corners = [(i,j),(i+1,j),(i,j+1),(i+1,j+1)]
-            # for p in corners:
-            #     dist = line_dist(A,B,p)
-            #     if dist > np.sqrt(2)*1.1:
-            #         continue
-            #     if dist < np.sqrt(2)*0.1:
-            #         return True
             corners = [(i-d,j-d),(i+d+1,j-d),(i-d,j+d+1),(i+d+1,j+d+1)]
             clock = 0
             for p in corners:
