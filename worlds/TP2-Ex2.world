@@ -53,7 +53,7 @@ interval_sim 50  # simulation timestep in milliseconds
 
 window
 ( 
-  size [ 650 650 ]
+  size [ 750 750 ]
 
   rotate [ 0.000 0.000 ]
   scale 10.000
