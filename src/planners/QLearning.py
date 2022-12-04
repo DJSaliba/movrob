@@ -6,12 +6,9 @@ from tqdm import tqdm
 
 import numpy as np
 import random
-from PIL import Image
 import rospy
 import matplotlib.pyplot as plt
 
-from utils.Node import Node, OpenList, VisitedList
-from utils.utils import vec_norm, manh_dist
 from planners.Planner import Mapper
 
 
