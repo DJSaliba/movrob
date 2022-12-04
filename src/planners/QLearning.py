@@ -7,7 +7,9 @@ from tqdm import tqdm
 import numpy as np
 import random
 import rospy
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TKAgg')
+from matplotlib import pyplot as plt
 
 from planners.Planner import Mapper
 
@@ -21,6 +23,8 @@ class QLearning(Mapper):
         self.epsil = epsil
         self.alpha = alpha
         self.gama = gama
+        self.image_path = image_path
+        self.img = []
 
         if neighborhood not in [4,8]:
             raise ValueError
@@ -56,8 +60,8 @@ class QLearning(Mapper):
         return [c for c in candidates if c != (x,y)]
 
     def save_QL_img(self):
-        img = plt.imread(self.image_path)
-        plt.imshow(img)
+        self.img.append(plt.imread(self.image_path))
+        plt.imshow(self.img[-1])
         for i in tqdm(range(len(self.M))):
             for j in range(len(self.M[i])):
                 if self.M[i][j] != -np.Inf and self.M[i][j] != 100:
@@ -74,7 +78,7 @@ class QLearning(Mapper):
                     plt.plot(i,j, 'ob', lw = 0.2, markersize = 5)
         for i in tqdm(range(len(self.path)-1)):
             plt.plot([self.path[i][0], self.path[i+1][0]], [self.path[i][1], self.path[i+1][1]], 'b-', linestyle = "-", lw = 1)
-            
+  
         plt.show()
 
     def __call__(self,goal,position):
