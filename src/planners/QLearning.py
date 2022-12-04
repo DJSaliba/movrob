@@ -8,6 +8,7 @@ import numpy as np
 import random
 from PIL import Image
 import rospy
+import matplotlib.pyplot as plt
 
 from utils.Node import Node, OpenList, VisitedList
 from utils.utils import vec_norm, manh_dist
@@ -15,7 +16,7 @@ from planners.Planner import Mapper
 
 
 class QLearning(Mapper):
-    def __init__(self,image_path, nit = 100000, scale = 1, neighborhood = 4, epsil = 0.1, alpha = 0.1, gama = 0.9):
+    def __init__(self,image_path, nit = 10000, scale = 1, neighborhood = 4, epsil = 0.1, alpha = 0.1, gama = 0.9):
         super().__init__(image_path)
         self.scale = scale
         self.nit = nit
@@ -57,8 +58,31 @@ class QLearning(Mapper):
             candidates = [c for c in candidates if abs(c[0]-x)+abs(c[1]-y)==1]
         return [c for c in candidates if c != (x,y)]
 
+    def save_QL_img(self):
+        img = plt.imread(self.image_path)
+        plt.imshow(img)
+        for i in tqdm(range(len(self.M))):
+            for j in range(len(self.M[i])):
+                if self.M[i][j] != -np.Inf and self.M[i][j] != 100:
+                    ind_next = self.Q[i][j].index(max([e for e in self.Q[i][j] if isinstance(e, (float,int))]))
+                    if ind_next == 0:
+                        plt.plot(i,j, 'r', marker = (3, 0, 90), lw = 0.2, markersize = 5)
+                    if ind_next == 1:
+                        plt.plot(i,j, 'r', marker = (3, 0, 0), lw = 0.2, markersize = 5)
+                    if ind_next == 2:
+                        plt.plot(i,j, 'r', marker = (3, 0, 270), lw = 0.2, markersize = 5)
+                    if ind_next == 3:
+                        plt.plot(i,j, 'r', marker = (3, 0, 180), lw = 0.2, markersize = 5)
+                if self.M[i][j] == 100:
+                    plt.plot(i,j, 'ob', lw = 0.2, markersize = 5)
+        for i in tqdm(range(len(self.path)-1)):
+            plt.plot([self.path[i][0], self.path[i+1][0]], [self.path[i][1], self.path[i+1][1]], 'b-', linestyle = "-", lw = 1)
+            
+        plt.show()
+
     def __call__(self,goal,position):
         self._initialized = False
+        self.path = []
         self.goal = self.pos2coord(goal)
         coord = self.pos2coord(position)
     
@@ -101,6 +125,8 @@ class QLearning(Mapper):
                 actual_pos = [xnext, ynext]
                 if self.M[xnext][ynext] == 100 or self.M[xnext][ynext] == -np.Inf:
                     break
+        self.getPath(coord)
+        self.save_QL_img()
         return True
                 
     def verify_position(self,coord):
@@ -120,6 +146,22 @@ class QLearning(Mapper):
             return False
         return True
     
+    def getPath(self, coord):
+        self.path.append(coord)
+        newcoord = coord
+        while newcoord != self.goal and self.M[newcoord[0]][newcoord[1]] != -np.Inf:
+            ind_next = self.Q[newcoord[0]][newcoord[1]].index(max([e for e in self.Q[newcoord[0]][newcoord[1]] if isinstance(e, (float,int))]))
+            if ind_next == 0:
+                newcoord = (newcoord[0]-1, newcoord[1])
+            if ind_next == 1:
+                newcoord = (newcoord[0], newcoord[1]-1)
+            if ind_next == 2:
+                newcoord = (newcoord[0]+1, newcoord[1])
+            if ind_next == 3:
+                newcoord = (newcoord[0], newcoord[1]+1)
+            if newcoord not in self.path:
+                self.path.append(newcoord)
+        
     def get_next(self, position):
         coord = self.pos2coord(position)
         x = int(np.floor(self.size[0]/2 + coord[0]/self.scale))
