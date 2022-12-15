@@ -55,8 +55,8 @@ class QLearning(Mapper):
         candidates = set(product([l,x,r],[b,y,t]))
         if obj_hit:
             candidates = [c for c in candidates if self.wave_map[c] >= 0]
-        if self.neighborhood == 4:
-            candidates = [c for c in candidates if abs(c[0]-x)+abs(c[1]-y)==1]
+        #if self.neighborhood == 4:
+            #candidates = [c for c in candidates if abs(c[0]-x)+abs(c[1]-y)==1]
         return [c for c in candidates if c != (x,y)]
 
     def save_QL_img(self):
@@ -75,9 +75,9 @@ class QLearning(Mapper):
                     if ind_next == 3:
                         plt.plot(i,j, 'r', marker = (3, 0, 180), lw = 0.2, markersize = 5)
                 if self.M[i][j] == 100:
-                    plt.plot(i,j, 'ob', lw = 0.2, markersize = 5)
+                    plt.plot(i,j, 'ob', lw = 0.2, markersize = 10)
         for i in tqdm(range(len(self.path)-1)):
-            plt.plot([self.path[i][0], self.path[i+1][0]], [self.path[i][1], self.path[i+1][1]], 'b-', linestyle = "-", lw = 1)
+            plt.plot([self.path[i][0], self.path[i+1][0]], [self.path[i][1], self.path[i+1][1]], 'g-', linestyle = "-", lw = 5)
   
         plt.show()
 
